@@ -31,6 +31,17 @@ namespace MusicBeePlugin
             string json = File.ReadAllText(spotifyTokenPath);
             PKCETokenResponse token = JsonConvert.DeserializeObject<PKCETokenResponse>(json);
 
+            if (token.IsExpired)
+            {
+                DialogResult result = MessageBox.Show("CopySpotifyURL needs a refreshed Spotify token, would you like to get that now?",
+                    "Spotify Connection",
+                    MessageBoxButtons.YesNo);
+
+                if (result == DialogResult.Yes)
+                    await BeginWebAuth();
+                else return null;
+            }
+
             PKCEAuthenticator authenticator = new PKCEAuthenticator(clientId, token, spotifyTokenPath);
             authenticator.TokenRefreshed += (sender, authToken) => File.WriteAllText(spotifyTokenPath, JsonConvert.SerializeObject(authToken));
 
