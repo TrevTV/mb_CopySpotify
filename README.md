@@ -1,4 +1,4 @@
-# Copy Spotify URL
+# Copy Spotify URL [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S244CYE)
 MusicBee plugin that allows you to copy the Spotify link for (almost) any song or album in your library
 
 ## Installation
