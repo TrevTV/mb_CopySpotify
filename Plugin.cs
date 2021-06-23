@@ -70,6 +70,7 @@ namespace MusicBeePlugin
             {
                 case NotificationType.PluginStartup:
                     SpotifyAuthHandler.spotifyTokenPath = System.IO.Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), "spotify_token.json");
+                    SpotifyAuthHandler.spotifyAuthPath = System.IO.Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), "spotify_dev_token.json");
                     spotify = await SpotifyAuthHandler.GetSpotifyClient();
 
                     if (spotify == null)

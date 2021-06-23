@@ -7,46 +7,86 @@ using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MusicBeePlugin
 {
     public static class SpotifyAuthHandler
     {
         public static string spotifyTokenPath;
+        public static string spotifyAuthPath;
         private static string clientId = "59f6ab927e5143f48ce9dc850340b767";
 
         public async static Task<SpotifyClient> GetSpotifyClient()
         {
-            if (!File.Exists(spotifyTokenPath))
+            bool doesUserTokenExist = File.Exists(spotifyTokenPath);
+            bool doesDevIdsExist = File.Exists(spotifyAuthPath);
+            if (!doesUserTokenExist && !doesDevIdsExist)
             {
-                DialogResult result = MessageBox.Show("CopySpotifyURL requires you to connect a Spotify account to function, would you like to do that now?",
+                DialogResult result = MessageBox.Show(
+                    "CopySpotifyURL requires you to connect a Spotify account or developer app IDs to function," +
+                    "would you like to add that now?",
                     "Spotify Connection",
                     MessageBoxButtons.YesNo);
 
                 if (result == DialogResult.Yes)
-                    await BeginWebAuth();
+                {
+                    CustomMsgBox msgBox = new CustomMsgBox(
+                        "Please choose an authentication option.\n" +
+                        "Please note that Web Auth tokens expire very quickly",
+                        "Authentication Options");
+                    msgBox.SetButtons("Web Auth", "Developer App IDs");
+                    msgBox.ShowDialog();
+
+                    if (msgBox.DialogBoxResult == DialogBoxResult.Button1)
+                    {
+                        await BeginWebAuth();
+                    }
+                    else if (msgBox.DialogBoxResult == DialogBoxResult.Button2)
+                    {
+                        using (DevTokenForm form = new DevTokenForm())
+                            form.ShowDialog();
+                    }
+                }
                 else return null;
             }
 
-            string json = File.ReadAllText(spotifyTokenPath);
-            PKCETokenResponse token = JsonConvert.DeserializeObject<PKCETokenResponse>(json);
-
-            if (token.IsExpired)
+            if (doesDevIdsExist)
             {
-                DialogResult result = MessageBox.Show("CopySpotifyURL needs a refreshed Spotify token, would you like to get that now?",
-                    "Spotify Connection",
-                    MessageBoxButtons.YesNo);
+                string jsonData = File.ReadAllText(spotifyAuthPath);
+                JObject newJObject = JObject.Parse(jsonData);
+                string devClientId = newJObject["client_id"]?.ToString();
+                string devClientSecret = newJObject["client_secret"]?.ToString();
 
-                if (result == DialogResult.Yes)
-                    await BeginWebAuth();
-                else return null;
+                SpotifyClientConfig config = SpotifyClientConfig.CreateDefault();
+                ClientCredentialsRequest request = new ClientCredentialsRequest(devClientId, devClientSecret);
+                ClientCredentialsTokenResponse response = await new OAuthClient(config).RequestToken(request);
+                config.WithToken(response.AccessToken);
+                return new SpotifyClient(config);
             }
+            if (doesUserTokenExist)
+            {
+                string json = File.ReadAllText(spotifyTokenPath);
+                PKCETokenResponse token = JsonConvert.DeserializeObject<PKCETokenResponse>(json);
 
-            PKCEAuthenticator authenticator = new PKCEAuthenticator(clientId, token, spotifyTokenPath);
-            authenticator.TokenRefreshed += (sender, authToken) => File.WriteAllText(spotifyTokenPath, JsonConvert.SerializeObject(authToken));
+                if (token.IsExpired)
+                {
+                    DialogResult result = MessageBox.Show("CopySpotifyURL needs a refreshed Spotify token, would you like to get that now?",
+                        "Spotify Connection",
+                        MessageBoxButtons.YesNo);
 
-            SpotifyClientConfig config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
-            return new SpotifyClient(config);
+                    if (result == DialogResult.Yes)
+                        await BeginWebAuth();
+                    else return null;
+                }
+
+                PKCEAuthenticator authenticator = new PKCEAuthenticator(clientId, token, spotifyTokenPath);
+                authenticator.TokenRefreshed += (sender, authToken) => File.WriteAllText(spotifyTokenPath, JsonConvert.SerializeObject(authToken));
+
+                SpotifyClientConfig config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
+                return new SpotifyClient(config);
+            }
+            return null;
         }
 
         private async static Task BeginWebAuth()
