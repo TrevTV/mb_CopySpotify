@@ -37,17 +37,19 @@ namespace MusicBeePlugin
 
             string jsonData = jObj.ToString();
             File.WriteAllText(SpotifyAuthHandler.spotifyAuthPath, jsonData);
+
+            Close();
         }
     }
 
     public partial class DevTokenForm
     {
-        private Label label1;
-        private Label label2;
-        private Label label3;
-        private TextBox textBox1;
-        private TextBox textBox2;
-        private Button button1;
+        public Label label1;
+        public Label label2;
+        public Label label3;
+        public TextBox textBox1;
+        public TextBox textBox2;
+        public Button button1;
 
         private void InitializeComponent()
         {

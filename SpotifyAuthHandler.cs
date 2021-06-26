@@ -24,8 +24,8 @@ namespace MusicBeePlugin
             if (!doesUserTokenExist && !doesDevIdsExist)
             {
                 DialogResult result = MessageBox.Show(
-                    "CopySpotifyURL requires you to connect a Spotify account or developer app IDs to function," +
-                    "would you like to add that now?",
+                    "CopySpotifyURL requires you to connect a Spotify account or developer app IDs to function, " +
+                    "would you like to add one now?",
                     "Spotify Connection",
                     MessageBoxButtons.YesNo);
 
@@ -33,7 +33,7 @@ namespace MusicBeePlugin
                 {
                     CustomMsgBox msgBox = new CustomMsgBox(
                         "Please choose an authentication option.\n" +
-                        "Please note that Web Auth tokens expire very quickly",
+                        "Do note that Web Auth tokens expire very quickly",
                         "Authentication Options");
                     msgBox.SetButtons("Web Auth", "Developer App IDs");
                     msgBox.ShowDialog();
@@ -41,11 +41,13 @@ namespace MusicBeePlugin
                     if (msgBox.DialogBoxResult == DialogBoxResult.Button1)
                     {
                         await BeginWebAuth();
+                        doesUserTokenExist = File.Exists(spotifyTokenPath);
                     }
                     else if (msgBox.DialogBoxResult == DialogBoxResult.Button2)
                     {
                         using (DevTokenForm form = new DevTokenForm())
                             form.ShowDialog();
+                        doesDevIdsExist = File.Exists(spotifyAuthPath);
                     }
                 }
                 else return null;
@@ -61,7 +63,7 @@ namespace MusicBeePlugin
                 SpotifyClientConfig config = SpotifyClientConfig.CreateDefault();
                 ClientCredentialsRequest request = new ClientCredentialsRequest(devClientId, devClientSecret);
                 ClientCredentialsTokenResponse response = await new OAuthClient(config).RequestToken(request);
-                config.WithToken(response.AccessToken);
+                config = config.WithToken(response.AccessToken);
                 return new SpotifyClient(config);
             }
             if (doesUserTokenExist)
@@ -114,7 +116,7 @@ namespace MusicBeePlugin
             await server.Start();
 
             try { BrowserUtil.Open(uri); }
-            catch { Console.WriteLine("Unable to open URL, manually open: {0}", uri); }
+            catch { MessageBox.Show("Unable to open URL, manually open: " + uri); }
 
             // prevents it from returning early
             while (!hasReceived)

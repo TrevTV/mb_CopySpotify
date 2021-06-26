@@ -75,23 +75,23 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FuzzyString">
+      <HintPath>..\..\..\Desktop\MusicBee\Plugins\FuzzyString.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\Desktop\MusicBee\Plugins\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SpotifyAPI.Web">
+      <HintPath>..\..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="SpotifyAPI.Web.Auth">
+      <HintPath>..\..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.Auth.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="FuzzyString">
-      <HintPath>..\..\Desktop\MusicBee\Plugins\FuzzyString.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\Desktop\MusicBee\Plugins\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="SpotifyAPI.Web.Auth">
-      <HintPath>..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.Auth.dll</HintPath>
-    </Reference>
-    <Reference Include="SpotifyAPI.Web">
-      <HintPath>..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MBSong.cs" />
@@ -100,8 +100,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpotifyAuthHandler.cs" />
     <Compile Include="SpotifyItem.cs" />
-    <Compile Include="CustomMsgBox.cs" />
-    <Compile Include="DevTokenForm.cs" />
+    <Compile Include="CustomMsgBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DevTokenForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

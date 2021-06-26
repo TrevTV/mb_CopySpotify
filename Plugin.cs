@@ -107,12 +107,13 @@ namespace MusicBeePlugin
 
             if (spotifyItem == null)
             {
-                System.Media.SystemSounds.Exclamation.Play();
+                System.Media.SystemSounds.Hand.Play();
                 MessageBox.Show("That item cannot be found on Spotify.");
                 return;
             }
 
             Clipboard.SetText(spotifyItem.Url);
+            System.Media.SystemSounds.Exclamation.Play();
         }
 
         public SpotifyItem FindItem(SearchResponse searchResponse, SearchRequest.Types searchType, MBSong wantedSong)
