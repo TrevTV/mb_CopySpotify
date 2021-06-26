@@ -18,7 +18,7 @@ If you are sure that your item is on Spotify and the names are similar, please c
 As of now, I have not added a single button to change auth methods so it takes a tiny bit more work.
 1. Press the keys `Windows + R` and a box labeled `Run` will appear.
 2. In that box, put the following, `%appdata%\MusicBee` and press Enter.
-NOTE: If you are using the Portable version of MusicBee, go to the MusicBee folder then UserData instead of using Run
+NOTE: If you are using the Portable version of MusicBee, go to your MusicBee folder then AppData instead of using Run
 3. Once File Explorer is open, delete the following files if they exist.
 `spotify_token.json`
 `spotify_dev_token.json`
