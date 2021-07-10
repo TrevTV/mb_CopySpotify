@@ -13,11 +13,13 @@ namespace MusicBeePlugin
 {
     public static class SpotifyAuthHandler
     {
+        public static SpotifyClient Instance;
+
         public static string spotifyTokenPath;
         public static string spotifyAuthPath;
         private static string clientId = "59f6ab927e5143f48ce9dc850340b767";
 
-        public async static Task<SpotifyClient> GetSpotifyClient()
+        public async static Task SetupSpotifyClient()
         {
             bool doesUserTokenExist = File.Exists(spotifyTokenPath);
             bool doesDevIdsExist = File.Exists(spotifyAuthPath);
@@ -50,8 +52,10 @@ namespace MusicBeePlugin
                         doesDevIdsExist = File.Exists(spotifyAuthPath);
                     }
                 }
-                else return null;
+                else return;
             }
+
+            SpotifyClientConfig spotifyConfig = null;
 
             if (doesDevIdsExist)
             {
@@ -60,13 +64,12 @@ namespace MusicBeePlugin
                 string devClientId = newJObject["client_id"]?.ToString();
                 string devClientSecret = newJObject["client_secret"]?.ToString();
 
-                SpotifyClientConfig config = SpotifyClientConfig.CreateDefault();
+                spotifyConfig = SpotifyClientConfig.CreateDefault();
                 ClientCredentialsRequest request = new ClientCredentialsRequest(devClientId, devClientSecret);
-                ClientCredentialsTokenResponse response = await new OAuthClient(config).RequestToken(request);
-                config = config.WithToken(response.AccessToken);
-                return new SpotifyClient(config);
+                ClientCredentialsTokenResponse response = await new OAuthClient(spotifyConfig).RequestToken(request);
+                spotifyConfig = spotifyConfig.WithToken(response.AccessToken);
             }
-            if (doesUserTokenExist)
+            else if (doesUserTokenExist)
             {
                 string json = File.ReadAllText(spotifyTokenPath);
                 PKCETokenResponse token = JsonConvert.DeserializeObject<PKCETokenResponse>(json);
@@ -79,16 +82,30 @@ namespace MusicBeePlugin
 
                     if (result == DialogResult.Yes)
                         await BeginWebAuth();
-                    else return null;
+                    else return;
                 }
 
                 PKCEAuthenticator authenticator = new PKCEAuthenticator(clientId, token, spotifyTokenPath);
                 authenticator.TokenRefreshed += (sender, authToken) => File.WriteAllText(spotifyTokenPath, JsonConvert.SerializeObject(authToken));
 
-                SpotifyClientConfig config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
-                return new SpotifyClient(config);
+                spotifyConfig = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
             }
-            return null;
+
+            Instance = new SpotifyClient(spotifyConfig);
+        }
+
+        public static async Task RefreshDevKeyClient()
+        {
+            string jsonData = File.ReadAllText(spotifyAuthPath);
+            JObject newJObject = JObject.Parse(jsonData);
+            string devClientId = newJObject["client_id"]?.ToString();
+            string devClientSecret = newJObject["client_secret"]?.ToString();
+
+            SpotifyClientConfig spotifyConfig = SpotifyClientConfig.CreateDefault();
+            ClientCredentialsRequest request = new ClientCredentialsRequest(devClientId, devClientSecret);
+            ClientCredentialsTokenResponse response = await new OAuthClient(spotifyConfig).RequestToken(request);
+            spotifyConfig = spotifyConfig.WithToken(response.AccessToken);
+            Instance = new SpotifyClient(spotifyConfig);
         }
 
         private async static Task BeginWebAuth()

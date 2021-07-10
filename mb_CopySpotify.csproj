@@ -76,16 +76,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FuzzyString">
-      <HintPath>..\..\..\Desktop\MusicBee\Plugins\FuzzyString.dll</HintPath>
+      <HintPath>bin\Debug\\FuzzyString.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\Desktop\MusicBee\Plugins\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SpotifyAPI.Web">
-      <HintPath>..\..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.dll</HintPath>
+      <HintPath>bin\Debug\SpotifyAPI.Web.dll</HintPath>
     </Reference>
     <Reference Include="SpotifyAPI.Web.Auth">
-      <HintPath>..\..\..\Desktop\MusicBee\Plugins\SpotifyAPI.Web.Auth.dll</HintPath>
+      <HintPath>bin\Debug\SpotifyAPI.Web.Auth.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -133,11 +134,4 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

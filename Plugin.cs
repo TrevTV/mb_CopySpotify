@@ -13,7 +13,6 @@ namespace MusicBeePlugin
     {
         public static MusicBeeApiInterface mbApiInterface;
 
-        private SpotifyClient spotify;
         private PluginInfo about = new PluginInfo();
         private readonly List<FuzzyStringComparisonOptions> fuzzySearchOptions = new List<FuzzyStringComparisonOptions>
             {
@@ -32,8 +31,8 @@ namespace MusicBeePlugin
             about.Author = "trev";
             about.Type = PluginType.General;
             about.VersionMajor = 1;
-            about.VersionMinor = 0;
-            about.Revision = 2;
+            about.VersionMinor = 1;
+            about.Revision = 0;
             about.MinInterfaceVersion = 40;
             about.MinApiRevision = 52;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
@@ -71,9 +70,9 @@ namespace MusicBeePlugin
                 case NotificationType.PluginStartup:
                     SpotifyAuthHandler.spotifyTokenPath = System.IO.Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), "spotify_token.json");
                     SpotifyAuthHandler.spotifyAuthPath = System.IO.Path.Combine(mbApiInterface.Setting_GetPersistentStoragePath(), "spotify_dev_token.json");
-                    spotify = await SpotifyAuthHandler.GetSpotifyClient();
+                    await SpotifyAuthHandler.SetupSpotifyClient();
 
-                    if (spotify == null)
+                    if (SpotifyAuthHandler.Instance == null)
                         return;
 
                     mbApiInterface.MB_AddMenuItem($"context.Main/Copy Spotify URL", "", MenuClicked);
@@ -101,7 +100,17 @@ namespace MusicBeePlugin
             string searchStr = CleanString((isTrack ? song.Name : song.AlbumName) + $" {song.Artist}");
 
             SearchRequest searchRequest = new SearchRequest(searchType, searchStr);
-            SearchResponse response = await spotify.Search.Item(searchRequest);
+            SearchResponse response;
+
+            try
+            {
+                response = await SpotifyAuthHandler.Instance.Search.Item(searchRequest);
+            }
+            catch (APIUnauthorizedException)
+            {
+                await SpotifyAuthHandler.RefreshDevKeyClient();
+                response = await SpotifyAuthHandler.Instance.Search.Item(searchRequest);
+            }
 
             SpotifyItem spotifyItem = FindItem(response, searchType, song);
 
@@ -118,6 +127,8 @@ namespace MusicBeePlugin
 
         public SpotifyItem FindItem(SearchResponse searchResponse, SearchRequest.Types searchType, MBSong wantedSong)
         {
+            if (searchResponse == null) return null;
+
             // Not the cleanest
             if (searchType == SearchRequest.Types.Track)
             {
