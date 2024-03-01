@@ -21,6 +21,20 @@ namespace MusicBeePlugin
 
         public async static Task SetupSpotifyClient()
         {
+            {
+                using System.Net.WebClient client = new();
+                try
+                {
+                    // using robots.txt cause its smaller than downloading the whole front page
+                    _ = await client.DownloadStringTaskAsync("https://spotify.com/robots.txt");
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to connect to the internet, CopySpotifyURL will not work.");
+                    return;
+                }
+            }
+
             bool doesUserTokenExist = File.Exists(spotifyTokenPath);
             bool doesDevIdsExist = File.Exists(spotifyAuthPath);
             if (!doesUserTokenExist && !doesDevIdsExist)
