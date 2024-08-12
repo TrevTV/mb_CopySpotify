@@ -3,9 +3,13 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 using SpotifyAPI.Web;
 using FuzzyString;
+using System.Runtime.InteropServices;
 
 namespace MusicBeePlugin
 {
@@ -14,12 +18,34 @@ namespace MusicBeePlugin
         public static MusicBeeApiInterface mbApiInterface;
 
         private PluginInfo about = new PluginInfo();
-        private readonly List<FuzzyStringComparisonOptions> fuzzySearchOptions = new List<FuzzyStringComparisonOptions>
+
+        [DllImport("kernel32")]
+        static extern bool AllocConsole();
+
+        public Plugin()
+        {
+            // taken from https://github.com/sll552/DiscordBee/blob/master/DiscordBee.cs
+            AppDomain.CurrentDomain.AssemblyResolve += (object _, ResolveEventArgs args) =>
             {
-                FuzzyStringComparisonOptions.UseOverlapCoefficient,
-                FuzzyStringComparisonOptions.UseLongestCommonSubsequence,
-                FuzzyStringComparisonOptions.UseLongestCommonSubstring
+                string assemblyFile = args.Name.Contains(",")
+                    ? args.Name.Substring(0, args.Name.IndexOf(','))
+                    : args.Name;
+
+                assemblyFile += ".dll";
+
+                string absoluteFolder = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath);
+                string targetPath = Path.Combine(absoluteFolder, "CopySpotify", assemblyFile);
+
+                try
+                {
+                    return Assembly.LoadFile(targetPath);
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
             };
+        }
 
         public PluginInfo Initialise(IntPtr apiInterfacePtr)
         {
@@ -31,8 +57,8 @@ namespace MusicBeePlugin
             about.Author = "trev";
             about.Type = PluginType.General;
             about.VersionMajor = 1;
-            about.VersionMinor = 1;
-            about.Revision = 1;
+            about.VersionMinor = 2;
+            about.Revision = 0;
             about.MinInterfaceVersion = 40;
             about.MinApiRevision = 52;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
@@ -152,7 +178,9 @@ namespace MusicBeePlugin
 
         public bool SimilarStrings(string str1, string str2)
         {
-            bool result = str1.ApproximatelyEquals(str2, FuzzyStringComparisonTolerance.Normal, fuzzySearchOptions.ToArray());
+            bool result = str1.ApproximatelyEquals(str2, FuzzyStringComparisonTolerance.Normal, [FuzzyStringComparisonOptions.UseOverlapCoefficient,
+                FuzzyStringComparisonOptions.UseLongestCommonSubsequence,
+                FuzzyStringComparisonOptions.UseLongestCommonSubstring]);
             return result;
         }
 

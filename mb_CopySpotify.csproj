@@ -77,17 +77,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FuzzyString">
-      <HintPath>bin\Debug\\FuzzyString.dll</HintPath>
+      <HintPath>Libs\FuzzyString.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\Newtonsoft.Json.dll</HintPath>
+      <HintPath>Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SpotifyAPI.Web">
-      <HintPath>bin\Debug\SpotifyAPI.Web.dll</HintPath>
+      <HintPath>Libs\SpotifyAPI.Web.dll</HintPath>
     </Reference>
     <Reference Include="SpotifyAPI.Web.Auth">
-      <HintPath>bin\Debug\SpotifyAPI.Web.Auth.dll</HintPath>
+      <HintPath>Libs\SpotifyAPI.Web.Auth.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -135,4 +135,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>del /S /Q "mb_CopySpotify"
+mkdir "mb_CopySpotify"
+mkdir "mb_CopySpotify\CopySpotify\"
+copy /Y "$(TargetPath)" "mb_CopySpotify"
+for %25%25f in ("$(TargetDir)*.dll") do if /I not "%25%25~nxf"=="$(TargetFileName)" copy /Y "%25%25f" "mb_CopySpotify\CopySpotify\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
